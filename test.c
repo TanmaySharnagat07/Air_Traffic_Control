@@ -5,7 +5,6 @@
  {
     int hrs;
     int min;
-    int sec;
    
  }Time;
 
@@ -30,7 +29,7 @@ typedef struct Bucket
 int timeDiff(Time a, Time b)
 {
     int diff = 0;
-    diff = (a.hrs * 3600 + a.min * 60 + a.sec) - (b.hrs * 3600 + b.min * 60 + b.sec);
+    diff = (a.hrs * 60 + a.min) - (b.hrs * 60 + b.min);
     return diff;
 }
 
