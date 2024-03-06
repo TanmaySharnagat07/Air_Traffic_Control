@@ -130,9 +130,9 @@ void insertFlightPlan(Bucket *bucketList, int flightId, Time departTime, Time ET
     FlightSchedule *newSchedule = createSchedule(flightId, departTime, ETA);
     Bucket *temp = bucketList;
     int flag = 1;
-    while (flag)
+    while (flag == 1)
     {
-        if (liesBetween(temp->etaStart, temp->etaEnd, ETA))
+        if (liesBetween(temp->etaStart, temp->etaEnd, ETA) == 1)
         {
             flag = 0;
         }
@@ -141,25 +141,36 @@ void insertFlightPlan(Bucket *bucketList, int flightId, Time departTime, Time ET
             temp = temp->next;
         }
     }
-
-    if (temp->flightSchedule == NULL)
+    if (temp == NULL)
     {
-        temp->flightSchedule = newSchedule;
+        
     }
+
     else
     {
-
-        FlightSchedule *prev = temp->flightSchedule;
-        FlightSchedule *curr = temp->flightSchedule;
-        while (maxTime(newSchedule->departureTime, curr->departureTime) >= 0)
+        if (temp->flightSchedule == NULL)
         {
-            prev = curr;
-            curr = curr->next;
+            temp->flightSchedule = newSchedule;
         }
-        prev->next = newSchedule;
-        newSchedule->next = curr;
+        else if (maxTime(newSchedule->departureTime, temp->flightSchedule->departureTime) < 0)
+        {
+            newSchedule->next = temp->flightSchedule;
+            temp->flightSchedule = newSchedule;
+        }
+        else
+        {
+            FlightSchedule *prev = temp->flightSchedule;
+            FlightSchedule *curr = temp->flightSchedule;
+            while (curr && maxTime(newSchedule->departureTime, curr->departureTime) >= 0)
+            {
+                prev = curr;
+                curr = curr->next;
+            }
+            prev->next = newSchedule;
+            newSchedule->next = curr;
+        }
     }
-    return ;
+    return;
 }
 
 Bucket *insertBucket(Bucket *bucketList, int bucketId, Time etaStart, Time etaEnd)
@@ -207,10 +218,6 @@ int main()
     etaE.hrs = 2;
     etaE.min = 59;
     Bucket *newB = createBucket(90, etaS, etaE);
-    Time dT ;
-    dT.hrs = 1;
-    dT.min = 30 ;
-    // insertFlightPlan(newB, 110, dT, dT);
     etaS.hrs = 1;
     etaS.min = 00;
     etaE.hrs = 1;
@@ -221,6 +228,20 @@ int main()
     etaE.hrs = 3;
     etaE.min = 59;
     newB = insertBucket(newB, 92, etaS, etaE);
+    Time dT;
+    dT.hrs = 1;
+    dT.min = 30;
+    insertFlightPlan(newB, 110, dT, dT);
+    dT.hrs = 2;
+    dT.min = 30;
+    insertFlightPlan(newB, 111, dT, dT);
+    dT.hrs = 1;
+    dT.min = 36;
+    insertFlightPlan(newB, 112, dT, dT);
+    dT.hrs = 2;
+    dT.min = 24;
+    insertFlightPlan(newB, 113, dT, dT);
+
     Print(newB);
 
     return 0;
