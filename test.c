@@ -69,14 +69,27 @@ FlightSchedule *createSchedule(int flightId, Time departureTime, Time eta)
     newSchedule->next = NULL;
 }
 
-void Print(Bucket *bucket){
-    Bucket* temp = bucket;
-    while(temp){
+int liesBetween(Time etaStart, Time etaEnd, Time ETA)
+{
+    int ans = 0;
+    if (timeDiff(ETA, etaStart) >= 0 && timeDiff(ETA, etaStart) < 60 && timeDiff(etaEnd, ETA) >= 0 && timeDiff(etaEnd, ETA) < 60)
+    {
+        ans = 1;
+    }
+    return ans;
+}
+
+void Print(Bucket *bucket)
+{
+    Bucket *temp = bucket;
+    while (temp)
+    {
         printf("Bucket Id: %d\n", temp->bucketId);
         printf("ETA Start: %d:%d\n", temp->etaStart.hrs, temp->etaStart.min);
         printf("ETA End: %d:%d\n", temp->etaEnd.hrs, temp->etaEnd.min);
-        FlightSchedule* temp2 = temp->flightSchedule;
-        while(temp2){
+        FlightSchedule *temp2 = temp->flightSchedule;
+        while (temp2)
+        {
             printf("Flight Id: %d\n", temp2->flightId);
             printf("Departure Time: %d:%d\n", temp2->departureTime.hrs, temp2->departureTime.min);
             printf("ETA: %d:%d\n", temp2->eta.hrs, temp2->eta.min);
@@ -85,22 +98,104 @@ void Print(Bucket *bucket){
         temp = temp->next;
     }
 }
+
+void showStatus(Bucket *bucketList, int bucketId, int flightId)
+{
+    Bucket *temp = bucketList;
+    int flag = 1;
+    while (temp && flag)
+    {
+        if (temp->bucketId == bucketId)
+        {
+            FlightSchedule *temp2 = temp->flightSchedule;
+            while (temp2 && flag)
+            {
+                if (temp2->flightId == flightId)
+                {
+                    printf("Flight Id: %d\n", temp2->flightId);
+                    printf("Departure Time: %d:%d\n", temp2->departureTime.hrs, temp2->departureTime.min);
+                    printf("ETA: %d:%d\n", temp2->eta.hrs, temp2->eta.min);
+                    flag = 0;
+                }
+                temp2 = temp2->next;
+            }
+        }
+        temp = temp->next;
+    }
+}
+
+FlightSchedule *insertFlightPlan(Bucket *bucketList, int flightId, Time departTime, Time ETA)
+{
+    FlightSchedule *newSchedule = createSchedule(flightId, departTime, ETA);
+    Bucket *temp = bucketList;
+    int flag = 1;
+    while (flag)
+    {
+        if (liesBetween(temp->etaStart, temp->etaEnd, ETA))
+        {
+            flag = 0;
+        }
+    }
+    FlightSchedule *prev = temp->flightSchedule;
+    FlightSchedule *curr = temp->flightSchedule;
+
+    while (maxTime(newSchedule->departureTime, curr->departureTime) >= 0)
+    {
+        prev = curr;
+        curr = curr->next;
+    }
+    prev->next = newSchedule;
+    newSchedule->next = curr;
+    return temp->flightSchedule;
+}
+
+Bucket *insertBucket(Bucket *bucketList, int bucketId, Time etaStart, Time etaEnd)
+{
+    Bucket *newBucket = createBucket(bucketId, etaStart, etaEnd);
+    if (bucketList == NULL)
+    {
+        bucketList = newBucket;
+    }
+    else if(timeDiff(bucketList->etaStart, newBucket->etaEnd) >= 0){
+        newBucket->next = bucketList;
+        bucketList = newBucket;
+    }
+    else
+    {
+        Bucket *temp = bucketList;
+        int flag = 1;
+        while (flag)
+        {
+            if (timeDiff(etaStart, temp->etaStart) >= 0 && timeDiff(etaStart, temp->etaStart) < 60 && timeDiff(temp->etaEnd, etaEnd) >= 0 && timeDiff(temp->etaEnd, etaEnd) < 60)
+            {
+                flag = 0;
+            }
+        }
+        newBucket->next = temp->next;
+        temp->next = newBucket;
+    }
+
+    return bucketList;
+}
 int main()
 {
 
     Time etaS;
-    etaS.hrs = 2 ;
+    etaS.hrs = 2;
     etaS.min = 00;
     Time etaE;
-    etaE.hrs = 3 ;
+    etaE.hrs = 3;
     etaE.min = 00;
-    Bucket *newB = createBucket(101, etaS, etaE);
+    Bucket *newB = createBucket(90, etaS, etaE);
     FlightSchedule *newS = createSchedule(101, etaS, etaE);
     newB->flightSchedule = newS;
-    newS->next = createSchedule(102, etaS, etaE);
+    etaS.hrs = 1;
+    etaS.min = 00;
+    etaE.hrs = 2;
+    etaE.min = 00;
+    newB = insertBucket(newB, 91, etaS, etaE);
 
     Print(newB);
-
 
     return 0;
 }
