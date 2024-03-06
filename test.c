@@ -69,10 +69,10 @@ FlightSchedule *createSchedule(int flightId, Time departureTime, Time eta)
     newSchedule->next = NULL;
 }
 
-int liesBetween(Time etaStart, Time etaEnd, Time ETA)
+int liesBetween(Time etaStart, Time etaEnd, Time GivenETA)
 {
     int ans = 0;
-    if (timeDiff(ETA, etaStart) >= 0 && timeDiff(ETA, etaStart) < 60 && timeDiff(etaEnd, ETA) >= 0 && timeDiff(etaEnd, ETA) < 60)
+    if (timeDiff(GivenETA, etaStart) >= 0 && timeDiff(GivenETA, etaStart) < 60 && timeDiff(etaEnd, GivenETA) >= 0 && timeDiff(etaEnd, GivenETA) < 60)
     {
         ans = 1;
     }
@@ -163,18 +163,20 @@ Bucket *insertBucket(Bucket *bucketList, int bucketId, Time etaStart, Time etaEn
     else
     {
         Bucket *temp = bucketList;
+        Bucket* prev = bucketList ;
         int flag = 1;
-        while (flag)
+        while (flag && temp)
         {
             if (timeDiff(etaStart, temp->etaStart) >= 0 && timeDiff(etaStart, temp->etaStart) < 60 && timeDiff(temp->etaEnd, etaEnd) >= 0 && timeDiff(temp->etaEnd, etaEnd) < 60)
             {
                 flag = 0;
             }
+            prev = temp;
+            temp = temp->next;
         }
-        newBucket->next = temp->next;
-        temp->next = newBucket;
+        prev->next = newBucket;
+        newBucket->next = temp;
     }
-
     return bucketList;
 }
 int main()
@@ -194,7 +196,11 @@ int main()
     etaE.hrs = 2;
     etaE.min = 00;
     newB = insertBucket(newB, 91, etaS, etaE);
-
+    etaS.hrs = 3;
+    etaS.min = 00;
+    etaE.hrs = 4;
+    etaE.min = 00;
+    newB = insertBucket(newB, 92, etaS, etaE) ;
     Print(newB);
 
     return 0;
