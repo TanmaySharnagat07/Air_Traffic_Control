@@ -100,29 +100,32 @@ void Print(Bucket *bucket)
     }
 }
 
-void showStatus(Bucket *bucketList, int bucketId, int flightId)
+void showStatus(Bucket *bucketList, int flightId)
 {
     Bucket *temp = bucketList;
     int flag = 1;
     while (temp && flag)
     {
-        if (temp->bucketId == bucketId)
+        FlightSchedule *temp2 = temp->flightSchedule;
+        while (temp2 && flag)
         {
-            FlightSchedule *temp2 = temp->flightSchedule;
-            while (temp2 && flag)
+            if (temp2->flightId == flightId)
             {
-                if (temp2->flightId == flightId)
-                {
-                    printf("Flight Id: %d\n", temp2->flightId);
-                    printf("Departure Time: %d:%d\n", temp2->departureTime.hrs, temp2->departureTime.min);
-                    printf("ETA: %d:%d\n", temp2->eta.hrs, temp2->eta.min);
-                    flag = 0;
-                }
-                temp2 = temp2->next;
+                printf("Flight Id: %d\n", temp2->flightId);
+                printf("Departure Time: %d:%d\n", temp2->departureTime.hrs, temp2->departureTime.min);
+                printf("ETA: %d:%d\n", temp2->eta.hrs, temp2->eta.min);
+                flag = 0;
             }
+            temp2 = temp2->next;
         }
         temp = temp->next;
     }
+    if (flag)
+    {
+        printf("Flight Id %d does not exist\n", flightId);
+    }
+    printf("\n");
+    return;
 }
 
 void insertFlightPlan(Bucket *bucketList, int flightId, Time departTime, Time ETA)
@@ -141,9 +144,10 @@ void insertFlightPlan(Bucket *bucketList, int flightId, Time departTime, Time ET
             temp = temp->next;
         }
     }
+
+    // Add new bucket to the list
     if (temp == NULL)
     {
-        
     }
 
     else
@@ -207,6 +211,40 @@ Bucket *insertBucket(Bucket *bucketList, int bucketId, Time etaStart, Time etaEn
 
 void deleteFlightPlan(Bucket *bucketList, int flightId)
 {
+    Bucket *temp = bucketList;
+    int flag = 1;
+    while (temp && flag)
+    {
+        FlightSchedule *curr = temp->flightSchedule;
+        if(curr && curr->flightId == flightId){
+            flag = 0;
+            FlightSchedule* ptr = curr ;
+            temp->flightSchedule = curr->next;
+            free(ptr);
+        }
+        else{
+            FlightSchedule* prev = temp->flightSchedule;
+            while(curr && flag){
+                if(curr->flightId == flightId){
+                    flag = 0;
+                    FlightSchedule* ptr = curr ;
+                    prev->next = curr->next;
+                    free(ptr);
+                }
+                else{
+                    prev = curr;
+                    curr = curr->next;
+                }
+            }
+        }
+        temp = temp->next;
+    }
+    if(flag == 1)
+    {
+        printf("Flight Id %d does not exist\n", flightId);
+    }
+    printf("\n");
+    return;
 }
 int main()
 {
@@ -243,6 +281,9 @@ int main()
     insertFlightPlan(newB, 113, dT, dT);
 
     Print(newB);
-
+    showStatus(newB, 110);
+    showStatus(newB, 112);
+    deleteFlightPlan(newB, 114);
+    Print(newB);
     return 0;
 }
