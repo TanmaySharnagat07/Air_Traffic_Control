@@ -132,8 +132,9 @@ void insertFlightPlan(Bucket *bucketList, int flightId, Time departTime, Time ET
 {
     FlightSchedule *newSchedule = createSchedule(flightId, departTime, ETA);
     Bucket *temp = bucketList;
+    Bucket *prev = bucketList;
     int flag = 1;
-    while (flag == 1)
+    while (temp && flag == 1)
     {
         if (liesBetween(temp->etaStart, temp->etaEnd, ETA) == 1)
         {
@@ -141,13 +142,22 @@ void insertFlightPlan(Bucket *bucketList, int flightId, Time departTime, Time ET
         }
         else
         {
+            prev = temp;
             temp = temp->next;
         }
     }
 
     // Add new bucket to the list
-    if (temp == NULL)
+    if (prev && temp == NULL && flag == 1)
     {
+        Time bETAstart = prev->etaStart ;
+        bETAstart.hrs++;
+        Time bETAend = prev->etaEnd;
+        bETAend.hrs++;
+        Bucket *newBucket = createBucket(prev->bucketId + 1, bETAstart, bETAend);
+        prev->next = newBucket ;
+        newBucket->flightSchedule = newSchedule;
+        printf("New bucket is created\n");
     }
 
     else
@@ -279,11 +289,16 @@ int main()
     dT.hrs = 2;
     dT.min = 24;
     insertFlightPlan(newB, 113, dT, dT);
-
+    dT.hrs = 4;
+    dT.min = 24;
+    insertFlightPlan(newB, 114, dT, dT);
+    dT.hrs = 4;
+    dT.min = 25;
+    insertFlightPlan(newB, 115, dT, dT);
     Print(newB);
     showStatus(newB, 110);
-    showStatus(newB, 112);
-    deleteFlightPlan(newB, 114);
+    showStatus(newB, 114);
+    deleteFlightPlan(newB, 110);
     Print(newB);
     return 0;
 }
