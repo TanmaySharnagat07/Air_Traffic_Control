@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#define BucketIDStart 500
 typedef struct Time
 {
     int hrs;
@@ -148,7 +148,7 @@ void insertFlightPlan(Bucket **bucketList, int flightId, Time departureTime, Tim
         ETAS.min = 0;
         ETAE.hrs = ETA.hrs + 1;
         ETAE.min = 0;
-        *bucketList = createBucket(600, ETAS, ETAE);
+        *bucketList = createBucket(BucketIDStart, ETAS, ETAE);
     }
     else
     {
@@ -339,7 +339,7 @@ int main()
     // deleteFlightPlan(&newB, 110);
     // Print(newB);
 
-    Bucket *bucketList;
+    Bucket *bucketList = NULL;
     int flightId;
     Time departTime;
     Time ETA;
@@ -351,7 +351,7 @@ int main()
         exit(EXIT_FAILURE);
     }
     else
-    {
+    {   
         while (!feof(fptr))
         {
             fscanf(fptr, "%d %d %d %d %d", &flightId, &departTime.hrs, &departTime.min, &ETA.hrs, &ETA.min);
