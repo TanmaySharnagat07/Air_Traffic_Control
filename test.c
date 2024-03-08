@@ -53,7 +53,7 @@ Bucket *createBucket(int bucketId, Time etaStart, Time etaEnd);
 FlightSchedule *createFlightSchedule(int flightId, Time departureTime, Time eta);
 void Print(Bucket *bucket);
 void showStatus(Bucket *buketList, int flightId);
-void insertFlightPlan(Bucket **bucketList, FlightSchedule* newSchedule);
+void insertFlightPlan(Bucket **bucketList, int flightId, Time departureTime, Time ETA) ;
 Bucket *insertBucket(Bucket *bucketList, Bucket *newBucket);
 void deleteFlightPlan(Bucket **bucketList, int flightId);
 void reArrangeBucket(Bucket **bucket);
@@ -69,7 +69,7 @@ Bucket *createBucket(int bucketId, Time etaStart, Time etaEnd)
     return newBucket;
 }
 
-FlightSchedule *createSchedule(int flightId, Time departureTime, Time eta)
+FlightSchedule *createFlightSchedule(int flightId, Time departureTime, Time eta)
 {
     FlightSchedule *newSchedule = (FlightSchedule *)malloc(sizeof(FlightSchedule));
     newSchedule->flightId = flightId;
@@ -137,21 +137,19 @@ void showStatus(Bucket *bucketList, int flightId)
     return;
 }
 
-void insertFlightPlan(Bucket **bucketList, FlightSchedule* newSchedule)
+void insertFlightPlan(Bucket **bucketList, int flightId, Time departureTime, Time ETA)
 {
+    FlightSchedule *newSchedule = createFlightSchedule(flightId, departureTime, ETA);
     Bucket *temp = *bucketList;
     if (temp == NULL)
     {
         Time ETAS, ETAE;
-        ETAS.hrs = newSchedule->eta.hrs;
+        ETAS.hrs = ETA.hrs;
         ETAS.min = 0;
-        ETAE.hrs = newSchedule->eta.hrs + 1;
+        ETAE.hrs = ETA.hrs + 1;
         ETAE.min = 0;
-        Bucket *newB = createBucket(600, ETAS, ETAE);
-        newB->flightSchedule = newSchedule;
-        *bucketList = newB;
+        *bucketList = createBucket(600, ETAS, ETAE);
     }
-
     else
     {
         Bucket *prev = *bucketList;
@@ -357,8 +355,7 @@ int main()
         while (!feof(fptr))
         {
             fscanf(fptr, "%d %d %d %d %d", &flightId, &departTime.hrs, &departTime.min, &ETA.hrs, &ETA.min);
-            FlightSchedule* newSchedule = createFlightSchedule(flightId, departTime, ETA);
-            insertFlightPlan(&bucketList, newSchedule);
+            insertFlightPlan(&bucketList, flightId, departTime, ETA);
         }
     }
     Print(bucketList);
