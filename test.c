@@ -53,7 +53,7 @@ Bucket *createBucket(int bucketId, Time etaStart, Time etaEnd);
 FlightSchedule *createFlightSchedule(int flightId, Time departureTime, Time eta);
 void Print(Bucket *bucket);
 void showStatus(Bucket *buketList, int flightId);
-void insertFlightPlan(Bucket **bucketList, int flightId, Time departTime, Time ETA);
+void insertFlightPlan(Bucket **bucketList, FlightSchedule* newSchedule);
 Bucket *insertBucket(Bucket *bucketList, Bucket *newBucket);
 void deleteFlightPlan(Bucket **bucketList, int flightId);
 void reArrangeBucket(Bucket **bucket);
@@ -137,16 +137,15 @@ void showStatus(Bucket *bucketList, int flightId)
     return;
 }
 
-void insertFlightPlan(Bucket **bucketList, int flightId, Time departTime, Time ETA)
+void insertFlightPlan(Bucket **bucketList, FlightSchedule* newSchedule)
 {
-    FlightSchedule *newSchedule = createSchedule(flightId, departTime, ETA);
     Bucket *temp = *bucketList;
     if (temp == NULL)
     {
         Time ETAS, ETAE;
-        ETAS.hrs = ETA.hrs;
+        ETAS.hrs = newSchedule->eta.hrs;
         ETAS.min = 0;
-        ETAE.hrs = ETA.hrs + 1;
+        ETAE.hrs = newSchedule->eta.hrs + 1;
         ETAE.min = 0;
         Bucket *newB = createBucket(600, ETAS, ETAE);
         newB->flightSchedule = newSchedule;
@@ -159,7 +158,7 @@ void insertFlightPlan(Bucket **bucketList, int flightId, Time departTime, Time E
         int flag = 1;
         while (temp && flag == 1)
         {
-            if (liesBetween(temp->etaStart, temp->etaEnd, ETA) == 1)
+            if (liesBetween(temp->etaStart, temp->etaEnd, newSchedule->eta) == 1)
             {
                 flag = 0;
             }
@@ -358,7 +357,8 @@ int main()
         while (!feof(fptr))
         {
             fscanf(fptr, "%d %d %d %d %d", &flightId, &departTime.hrs, &departTime.min, &ETA.hrs, &ETA.min);
-            insertFlightPlan(&bucketList, flightId, departTime, ETA);
+            FlightSchedule* newSchedule = createFlightSchedule(flightId, departTime, ETA);
+            insertFlightPlan(&bucketList, newSchedule);
         }
     }
     Print(bucketList);
