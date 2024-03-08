@@ -149,6 +149,7 @@ void insertFlightPlan(Bucket **bucketList, int flightId, Time departureTime, Tim
         ETAE.hrs = ETA.hrs + 1;
         ETAE.min = 0;
         *bucketList = createBucket(BucketIDStart, ETAS, ETAE);
+        (*bucketList)->flightSchedule = newSchedule;
     }
     else
     {
@@ -170,11 +171,14 @@ void insertFlightPlan(Bucket **bucketList, int flightId, Time departureTime, Tim
         // Add new bucket to the list
         if (prev != NULL && temp == NULL && flag == 1)
         {
-            Time bETAstart = prev->etaStart;
-            bETAstart.hrs = (bETAstart.hrs + 1) % 24;
+            Time bETAstart ;
+            bETAstart.hrs = (newSchedule->eta.hrs) % 24;
+            bETAstart.min = 0;
             Time bETAend = prev->etaEnd;
-            bETAend.hrs = (bETAend.hrs + 1) % 24;
+            bETAend.hrs = (newSchedule->eta.hrs + 1) % 24;
+            bETAend.min = 0;
             Bucket *newBucket = createBucket(prev->bucketId + 1, bETAstart, bETAend);
+            newBucket->flightSchedule = newSchedule;
             *bucketList = insertBucket(*bucketList, newBucket);
             printf("New bucket is created with bucketId %d\n", prev->bucketId + 1);
         }
@@ -351,7 +355,7 @@ int main()
         exit(EXIT_FAILURE);
     }
     else
-    {   
+    {
         while (!feof(fptr))
         {
             fscanf(fptr, "%d %d %d %d %d", &flightId, &departTime.hrs, &departTime.min, &ETA.hrs, &ETA.min);
