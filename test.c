@@ -128,11 +128,11 @@ void showStatus(Bucket *bucketList, int flightId)
     return;
 }
 
-void insertFlightPlan(Bucket *bucketList, int flightId, Time departTime, Time ETA)
+void insertFlightPlan(Bucket **bucketList, int flightId, Time departTime, Time ETA)
 {
     FlightSchedule *newSchedule = createSchedule(flightId, departTime, ETA);
-    Bucket *temp = bucketList;
-    Bucket *prev = bucketList;
+    Bucket *temp = *bucketList;
+    Bucket *prev = *bucketList;
     int flag = 1;
     while (temp && flag == 1)
     {
@@ -148,7 +148,7 @@ void insertFlightPlan(Bucket *bucketList, int flightId, Time departTime, Time ET
     }
 
     // Add new bucket to the list
-    if (prev && temp == NULL && flag == 1)
+    if (prev != NULL && temp == NULL && flag == 1)
     {
         Time bETAstart = prev->etaStart ;
         bETAstart.hrs++;
@@ -157,7 +157,7 @@ void insertFlightPlan(Bucket *bucketList, int flightId, Time departTime, Time ET
         Bucket *newBucket = createBucket(prev->bucketId + 1, bETAstart, bETAend);
         prev->next = newBucket ;
         newBucket->flightSchedule = newSchedule;
-        printf("New bucket is created\n");
+        printf("New bucket is created with bucketId %d\n",prev->bucketId+1);
     }
 
     else
@@ -219,9 +219,9 @@ Bucket *insertBucket(Bucket *bucketList, int bucketId, Time etaStart, Time etaEn
     return bucketList;
 }
 
-void deleteFlightPlan(Bucket *bucketList, int flightId)
+void deleteFlightPlan(Bucket **bucketList, int flightId)
 {
-    Bucket *temp = bucketList;
+    Bucket *temp = *bucketList;
     int flag = 1;
     while (temp && flag)
     {
@@ -293,12 +293,12 @@ int main()
     dT.min = 24;
     insertFlightPlan(newB, 114, dT, dT);
     dT.hrs = 4;
-    dT.min = 25;
+    dT.min = 23;
     insertFlightPlan(newB, 115, dT, dT);
     Print(newB);
-    showStatus(newB, 110);
-    showStatus(newB, 114);
-    deleteFlightPlan(newB, 110);
+    // showStatus(newB, 110);
+    // showStatus(newB, 114);
+    deleteFlightPlan(&newB, 110);
     Print(newB);
     return 0;
 }
