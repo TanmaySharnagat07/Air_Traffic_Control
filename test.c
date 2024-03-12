@@ -76,7 +76,6 @@ FlightSchedule *createFlightSchedule(int flightId, Time departureTime, Time eta)
     newSchedule->departureTime = departureTime;
     newSchedule->eta = eta;
     newSchedule->next = NULL;
-    return newSchedule;
 }
 
 int liesBetween(Time etaStart, Time etaEnd, Time GivenETA)
@@ -139,6 +138,7 @@ void showStatus(Bucket *bucketList, int flightId)
     printf("\n");
     return;
 }
+
 Bucket *insertBucket(Bucket *bucketList, Bucket *newBucket)
 {
 
@@ -181,7 +181,6 @@ Bucket *insertBucket(Bucket *bucketList, Bucket *newBucket)
     }
     return bucketList;
 }
-
 void insertFlightPlan(Bucket **bucketList, int flightId, Time departTime, Time ETA)
 {
     FlightSchedule *newSchedule = createFlightSchedule(flightId, departTime, ETA);
@@ -295,84 +294,6 @@ void deleteFlightPlan(Bucket **bucketList, int flightId)
     return;
 }
 
-// void reArrangeBucket(Bucket **bucket)
-// {
-//     Time t;
-//     int hr, min;
-//     printf("Enter current time hours and minutes\n");
-//     scanf("%d %d", &hr, &min);
-//     t.hrs = hr;
-//     t.min = min;
-//     Time zeroTime;
-//     zeroTime.hrs = 0;
-//     zeroTime.min = 0;
-//     Bucket *temp = createBucket(0,zeroTime,zeroTime);
-//     Bucket *prev = NULL;
-//     Bucket *curr = *bucket;
-//     FlightSchedule *next = NULL;
-
-//     FlightSchedule *current;
-//     FlightSchedule *store = NULL;
-//     FlightSchedule *Temp = NULL;
-
-//     while (curr)
-//     {
-//         FlightSchedule *store = NULL;
-//         FlightSchedule *storeStart;
-//         curr->etaStart.min = t.min;
-//         curr->etaEnd.hrs = (curr->etaEnd.hrs + 1)%24;
-//         curr->etaEnd.min = t.min - 1;
-//         Temp = curr->flightSchedule;
-
-//         FlightSchedule *previous = createFlightSchedule(0, zeroTime, zeroTime);
-//         FlightSchedule *prevTail = previous;
-
-//         while (Temp != NULL)
-//         {   FlightSchedule *next = Temp->next;
-//             if(Temp->eta.min >= t.min)
-//             {
-//                 prevTail->next = Temp;
-//                 prevTail = prevTail->next;
-//                 Temp->next ;
-//             }
-//             else if(Temp->eta.min < t.min)
-//             {
-//                 if(store == NULL)
-//                 {
-//                     store = Temp;
-//                     storeStart = store;
-//                 }
-//                 else
-//                 {
-//                     store->next = Temp;
-//                     store = store->next;
-//                 }
-
-//             }
-//             Temp = next ;
-//         }
-//         store->next = NULL;
-//         prevTail->next = NULL;
-//         curr->flightSchedule = NULL;
-//         curr->flightSchedule = previous->next;
-//         if (prev == NULL)
-//         {
-//             temp->flightSchedule = storeStart;
-//         }
-//         else
-//         {   FlightSchedule *a = prev->flightSchedule;
-//             while(a->next)
-//             {
-//                 a = a->next;
-//             }
-//             a->next  = storeStart;
-//         }
-//         prev = curr;
-//         curr = curr->next;
-
-//     }
-// }
-
 void reArrangeBucket(Bucket **bucket)
 {
     Time t;
@@ -387,6 +308,8 @@ void reArrangeBucket(Bucket **bucket)
     Bucket *tempBucket = createBucket(-1, notTime, notTime);
     Bucket *curr = *bucket;
     Bucket *prev = NULL;
+    Bucket *start;
+    Bucket *n;
 
     while (curr)
     {
@@ -394,12 +317,8 @@ void reArrangeBucket(Bucket **bucket)
         curr->etaEnd.hrs = (curr->etaEnd.hrs + 1) % 24;
         curr->etaEnd.min = t.min - 1;
         FlightSchedule *temp = curr->flightSchedule;
-
-        // dummy stores flightschedule in range
         FlightSchedule *dummy = createFlightSchedule(-11, notTime, notTime);
         FlightSchedule *dummyTail = dummy;
-
-        // store stores fligtschedule not in range
         FlightSchedule *store = createFlightSchedule(-1, notTime, notTime), *storeTail = store;
         while (temp)
         {
@@ -411,34 +330,81 @@ void reArrangeBucket(Bucket **bucket)
             }
             else
             {
-                storeTail->next = temp;
-                storeTail = storeTail->next;
+                if (storeTail == NULL)
+                {
+                    storeTail = temp;
+                    store = storeTail;
+                }
+                else
+                {
+                    storeTail->next = temp;
+                    storeTail = storeTail->next;
+                }
             }
             temp->next = NULL;
             temp = next;
         }
+        // storeTail->next = NULL;
+        // dummyTail->next = NULL;
         curr->flightSchedule = NULL;
         curr->flightSchedule = dummy->next;
-
-        if(prev == NULL){
-            tempBucket->flightSchedule = store->next ;
+        if (prev == NULL)
+        {
+            tempBucket->flightSchedule = store->next;
         }
-        else{
+        else
+        {
             FlightSchedule *a = prev->flightSchedule;
-            while(a->next)
+            while (a->next)
             {
                 a = a->next;
             }
-            a->next = store->next ;
+            a->next = store->next;
         }
-        free(store);
+        if (curr->next->etaStart.hrs == t.hrs)
+        {
+        }
+
+        if (curr->next == NULL)
+        {
+            curr->flightSchedule->next = tempBucket->flightSchedule;
+        }
         prev = curr;
         curr = curr->next;
     }
+    Bucket *Start = *bucket;
+    Bucket *C = *bucket;
+    Bucket *P = NULL;
+    if (t.hrs != 0)
+    {
+        while (C->etaStart.hrs < t.hrs)
+        {
+            P = C;
+            C = C->next;
+        }
+        *bucket = C;
+        P->next = NULL;
+        C = (*bucket)->next;
+        while (C->next)
+        {
+            C = C->next;
+        }
+        C->next = Start;
+    }
+}
+
+void printMenu()
+{
+    printf("1. Add a new flight\n");
+    printf("2. Delete a flight\n");
+    printf("3. Show Status\n");
+    printf("4. Rearrange \n");
+    printf("5. Exit\n");
 }
 
 int main()
 {
+
     Bucket *bucketList = NULL;
     int flightId;
     Time departTime;
@@ -462,5 +428,49 @@ int main()
     fclose(fptr);
     reArrangeBucket(&bucketList);
     Print(bucketList);
+    int choice;
+    // while (1)
+    // {
+    //     printMenu();
+    //     printf("Enter your choice: ");
+    //     scanf("%d", &choice);
+
+    //     switch (choice)
+    //     {
+    //     case 1:
+    //         printf("Enter the Flight Id\n");
+    //         scanf("%d", &flightId);
+    //         printf("Enter Departure Time\n");
+    //         scanf("%d %d", &departTime.hrs, &departTime.min);
+    //         printf("Enter Expected Time of Arrival\n");
+    //         scanf("%d %d", &ETA.hrs, &ETA.min);
+    //         insertFlightPlan(&bucketList, flightId, departTime, ETA);
+    //         Print(bucketList);
+    //         break;
+    //     case 2:
+    //         printf("Enter the Flight Id\n");
+    //         scanf("%d", &flightId);
+    //         deleteFlightPlan(&bucketList, flightId);
+    //         Print(bucketList);
+    //         break;
+    //     case 3:
+    //         printf("Enter the Flight Id\n");
+    //         scanf("%d", &flightId);
+    //         printf("\n");
+    //         showStatus(bucketList, flightId);
+    //         break;
+    //     case 4:
+    //         reArrangeBucket(&bucketList);
+    //         Print(bucketList);
+    //         break;
+    //     case 5:
+    //         printf("Exiting...\n");
+    //         return 0;
+    //     default:
+    //         printf("Invalid choice. Please try again.\n");
+    //         break;
+    //     }
+    // }
+
     return 0;
 }
