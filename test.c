@@ -294,7 +294,6 @@ void deleteFlightPlan(Bucket **bucketList, int flightId)
     return;
 }
 
-
 void reArrangeBucket(Bucket **bucket)
 {
     Time t;
@@ -306,86 +305,92 @@ void reArrangeBucket(Bucket **bucket)
     Time notTime;
     notTime.hrs = -1;
     notTime.min = -1;
-    Bucket* tempBucket = createBucket(-1, notTime, notTime);
-    Bucket* curr = *bucket;
-    Bucket* prev = NULL ;
-    Bucket* start;
-    Bucket* n;
+    Bucket *tempBucket = createBucket(-1, notTime, notTime);
+    Bucket *curr = *bucket;
+    Bucket *prev = NULL;
+    Bucket *start;
+    Bucket *n;
 
-    while(curr){
+    while (curr)
+    {
         curr->etaStart.min = t.min;
-        curr->etaEnd.hrs = (curr->etaEnd.hrs+1)%24;
-        curr->etaEnd.min = t.min-1 ;
-        FlightSchedule* temp = curr->flightSchedule;
-        FlightSchedule* dummy = createFlightSchedule(-11,notTime,notTime);
-        FlightSchedule* dummyTail = dummy; 
-        FlightSchedule* store = createFlightSchedule(-1,notTime,notTime), *storeTail= store ; 
-        while(temp){
-            FlightSchedule* next = temp->next;
-            if(temp->eta.min >= t.min){
-                dummyTail->next = temp ;
+        curr->etaEnd.hrs = (curr->etaEnd.hrs + 1) % 24;
+        curr->etaEnd.min = t.min - 1;
+        FlightSchedule *temp = curr->flightSchedule;
+        FlightSchedule *dummy = createFlightSchedule(-11, notTime, notTime);
+        FlightSchedule *dummyTail = dummy;
+        FlightSchedule *store = createFlightSchedule(-1, notTime, notTime), *storeTail = store;
+        while (temp)
+        {
+            FlightSchedule *next = temp->next;
+            if (temp->eta.min >= t.min)
+            {
+                dummyTail->next = temp;
                 dummyTail = dummyTail->next;
             }
-            else{
-                if(storeTail == NULL){
-                    storeTail = temp ;
-                    store = storeTail ;
+            else
+            {
+                if (storeTail == NULL)
+                {
+                    storeTail = temp;
+                    store = storeTail;
                 }
-                else{
-                    storeTail->next = temp ;
+                else
+                {
+                    storeTail->next = temp;
                     storeTail = storeTail->next;
                 }
             }
-            temp->next = NULL ;
+            temp->next = NULL;
             temp = next;
         }
         // storeTail->next = NULL;
         // dummyTail->next = NULL;
-        curr->flightSchedule = NULL ;
-        curr->flightSchedule = dummy->next ;
-        if(prev == NULL){
-            tempBucket->flightSchedule = store->next ;
+        curr->flightSchedule = NULL;
+        curr->flightSchedule = dummy->next;
+        if (prev == NULL)
+        {
+            tempBucket->flightSchedule = store->next;
         }
         else
         {
             FlightSchedule *a = prev->flightSchedule;
-            while(a->next)
+            while (a->next)
             {
                 a = a->next;
             }
-            a->next = store->next ;
+            a->next = store->next;
         }
-        if(curr->next->etaStart.hrs == t.hrs)
+        if (curr->next->etaStart.hrs == t.hrs)
         {
-            
         }
-        
-        if(curr->next == NULL)
+
+        if (curr->next == NULL)
         {
             curr->flightSchedule->next = tempBucket->flightSchedule;
-
-        } 
+        }
         prev = curr;
         curr = curr->next;
     }
-
-    Bucket* C = *bucket;
-    Bucket* P = NULL;
-    while(C)
+    Bucket *Start = *bucket;
+    Bucket *C = *bucket;
+    Bucket *P = NULL;
+    if (t.hrs != 0)
     {
-        if(C->etaStart.hrs < t.hrs)
+        while (C->etaStart.hrs < t.hrs)
         {
             P = C;
+            C = C->next;
         }
-        else if(C->etaStart.hrs == t.hrs)
+        *bucket = C;
+        P->next = NULL;
+        C = (*bucket)->next;
+        while (C->next)
         {
-            start = C ;
-            P->next = NULL;
+            C = C->next;
         }
-        C = C->next;
+        C->next = Start;
     }
-    C->next = *bucket;
-    *bucket = start;  
 }
 
 void printMenu()
@@ -423,7 +428,7 @@ int main()
     fclose(fptr);
     reArrangeBucket(&bucketList);
     Print(bucketList);
-     int choice;
+    int choice;
     // while (1)
     // {
     //     printMenu();
@@ -466,6 +471,6 @@ int main()
     //         break;
     //     }
     // }
-    
+
     return 0;
 }
